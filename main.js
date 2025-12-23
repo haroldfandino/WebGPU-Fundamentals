@@ -66,20 +66,27 @@ async function main() {
     renderPassDescriptor.colorAttachments[0].view =
         context.getCurrentTexture().createView();
 
-    // make a command encoder to start encoding commands
     const encoder = device.createCommandEncoder({ label: 'our encoder' });
-
-    // make a render pass encoder to encode render specific commands
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
-    pass.draw(3);  // call our vertex shader 3 times.
+    pass.draw(3);  // call our vertex shader 3 times
     pass.end();
 
     const commandBuffer = encoder.finish();
     device.queue.submit([commandBuffer]);
   }
 
-  render();
+  const observer = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      const canvas = entry.target;
+      const width = entry.contentBoxSize[0].inlineSize;
+      const height = entry.contentBoxSize[0].blockSize;
+      canvas.width = Math.max(1, Math.min(width, device.limits.maxTextureDimension2D));
+      canvas.height = Math.max(1, Math.min(height, device.limits.maxTextureDimension2D));
+    }
+    render();
+  });
+  observer.observe(canvas);
 }
 
 function fail(msg) {
@@ -88,4 +95,3 @@ function fail(msg) {
 }
 
 main();
-  
